@@ -26,6 +26,7 @@ int main(int argc, char *argv[]) {
 
 	/*Free resources*/
 	if(msg!=NULL){
+		// printf(msg);
 		gst_message_unref(msg);
 		gst_object_unref(bus);
 		gst_element_set_state(pipeline, GST_STATE_NULL);
