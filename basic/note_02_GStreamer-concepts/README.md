@@ -18,3 +18,22 @@ In this note, two elements are created: a `videotestsrc` and an `autovideosink`
 
 `autovideosink` is sink element (consume data), which displays on a window the images it receives. There exist serveral video sinks, depending on the operating system, with a varying range of capabilities. `autovideosink` automatically selects and instantiates the best one, so you do not have to worry with the details, and your code is more platform independent.
 
+> Pipeline creation
+
+```
+/* Create the empty pipeline */
+pipeline = gst_pipeline_new ("test-pipeline");
+```
+
+All elements in GStreamer must typically be contained inside a pipeline before they can be used, because it takes care of some clocking and messaging functions. We create the pipeline with ```gst_pipeline_new()```.
+
+```
+/* Build the pipeline */
+gst_bin_add_many (GST_BIN (pipeline), source, sink, NULL);
+if (gst_element_link (source, sink) != TRUE) {
+  g_printerr ("Elements could not be linked.\n");
+  gst_object_unref (pipeline);
+  return -1;
+}
+```
+
