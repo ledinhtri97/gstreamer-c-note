@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
 	}
 
 	/*Modify the source's properties*/
+	//g_object_set(gpointer object, const gchar *first_property_name, ..., NULL)
 	g_object_set(source, "pattern", 0, NULL);
 
 	/*Wait until error or EOS*/
