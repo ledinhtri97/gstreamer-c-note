@@ -1,7 +1,7 @@
 #include <gst/gst.h>
 
 int main(int argc, char *argv[]){
-	GstElement *pipeline, *source, *sink;
+	GstElement *pipeline, *source, *sink, *filter, *afterfilter;
 	GstBus *bus;
 	GstMessage *msg;
 	GstStateChangeReturn ret;
@@ -10,21 +10,34 @@ int main(int argc, char *argv[]){
 	gst_init(&argc, &argv);
 
 	/*Create the elements*/
+	//gst_element_factory_make(const gchar *factoryname, const gchar *name)
 	source = gst_element_factory_make("videotestsrc", "source");
+
+	filter = gst_element_factory_make("vertigotv", "filter");
+
+	afterfilter = gst_element_factory_make("videoconvert", "afterfilter");
+
 	sink = gst_element_factory_make("autovideosink", "sink");
 
 	/*Create the empty pipeline*/
 	pipeline = gst_pipeline_new("test-pipeline");
 
-	if (!pipeline || !source || !sink) {
+	if (!pipeline || !source || !filter || !afterfilter || !sink) {
 		g_printerr("Not all elements could be created.\n");
 		return -1;
 	}
 
 	/*Build the pipeline*/
 	gst_bin_add_many(GST_BIN(pipeline), source, sink, NULL);
+	//gst_bin_add_many(GST_BIN(pipeline), source, filter, afterfilter, sink, NULL);
 	if(gst_element_link(source, sink)!=TRUE){
-		g_printerr("Elements could not be linked.\n");
+		g_printerr("Elements source-sink could not be linked.\n");
+		gst_object_unref(pipeline);
+		return -1;
+	}
+
+	if(gst_element_link(filter, afterfilter)!=TRUE){
+		g_printerr("Elements filter-afterfilter could not be linked.\n");
 		gst_object_unref(pipeline);
 		return -1;
 	}
