@@ -56,7 +56,7 @@ g_signal_connect (data.source, "pad-added", G_CALLBACK (pad_added_handler), &dat
 
 `GSignals` are a crucial point in GStreamer. They allow you to be notified (by means of a callback) when something interesting has happened. Signals are identified by a name, and each `GObject` has its own signals.
 
-In this line, we are <i>attaching</i> to the "pad-added" signal of out source (an `uridecodebin` element). To do so, we use `g_signal_connect()` and provide the callback function to be used (```pad_added_handler```) and a data pointer. GStreamer does nothing with this data pointer, it just forwards it to the callback so we can share information with it. In this case, we pass a pointer to the `CustomData` structure we built specially for this purpose.
+In this line, we are *attaching* to the "pad-added" signal of out source (an `uridecodebin` element). To do so, we use `g_signal_connect()` and provide the callback function to be used (```pad_added_handler```) and a data pointer. GStreamer does nothing with this data pointer, it just forwards it to the callback so we can share information with it. In this case, we pass a pointer to the `CustomData` structure we built specially for this purpose.
 
 The signals that `GstElement` generates can be found in its documentation or using the `gst-inspect-1.0` tool (to find out how, let google it :D).
 
