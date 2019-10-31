@@ -52,7 +52,6 @@ We set the URI of the file to play via a property, just like we did in the previ
 /* Connect to the pad-added signal */
 g_signal_connect (data.source, "pad-added", G_CALLBACK (pad_added_handler), &data);
 ```
-```
 
 `GSignals` are a crucial point in GStreamer. They allow you to be notified (by means of a callback) when something interesting has happened. Signals are identified by a name, and each `GObject` has its own signals.
 
@@ -71,17 +70,18 @@ When our source element finally has enough information to start producing data, 
 static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) {}
 ```
 
-```src``` is the ```GstElement``` which triggered the signal. In this example, it can only be the ```uridecodebin```, since it is the only signal to which we have attched. The first parameter of a signal handler is always the object that has triggered it.
+`src` is the `GstElement` which triggered the signal. In this example, it can only be the ```uridecodebin```, since it is the only signal to which we have attched. The first parameter of a signal handler is always the object that has triggered it.
 
-```new_pad``` is ```GstPad``` that has just been added to the ```src``` element. This is usually the pad to which we want to link.
+`new_pad` is `GstPad` that has just been added to the `src` element. This is usually the pad to which we want to link.
 
-```data`` is the pointer we provided when attaching to the signal. In this example, we use it to pass the ```CustomData``` pointer.
+`data` is the pointer we provided when attaching to the signal. In this example, we use it to pass the `CustomData` pointer.
+
 
 ```
 GstPad *sink_pad = gst_element_get_static_pad (data->convert, "sink");
 ```
 
-From ```CustomData``` we extract the converter element, and then retrieve its sink pad using ```gst_element_get_static_pad()```. This is the pad to which we want to link ```new_pad```. In the previous tutorial we linked element against element, and let GStreamer choose the appropriate pads. Now we are going to link the pads directly.
+From `CustomData` we extract the converter element, and then retrieve its sink pad using `gst_element_get_static_pad()`. This is the pad to which we want to link `new_pad`. In the previous tutorial we linked element against element, and let GStreamer choose the appropriate pads. Now we are going to link the pads directly.
 
 ```
 /* If our converter is already linked, we have nothing to do here */
@@ -91,7 +91,7 @@ if (gst_pad_is_linked (sink_pad)) {
 }
 ```
 
-```uridecodebin``` can create as many pads as it sees fit, and for each one, this callback will be called. These lines of code will prevent us from trying to link to a new pad once we are already linked.
+`uridecodebin` can create as many pads as it sees fit, and for each one, this callback will be called. These lines of code will prevent us from trying to link to a new pad once we are already linked.
 
 ```
 /* Check the new pad's type */
@@ -104,9 +104,9 @@ if (!g_str_has_prefix (new_pad_type, "audio/x-raw")) {
 }
 ```
 
-Now we will check the type of data this new pad is going to output, because we are only interested in pads producing audio. We have previously created a piece of pipeline which deals with audio (an ```audioconvert``` linked with an ```autoaudiosink```), and we will not be able to link it to a pad producing video, for example.
+Now we will check the type of data this new pad is going to output, because we are only interested in pads producing audio. We have previously created a piece of pipeline which deals with audio (an `audioconvert` linked with an `autoaudiosink`), and we will not be able to link it to a pad producing video, for example.
 
-```gst_pad_get_current_caps()``` retrieves the current capabilities of the pad (that is, the kind of data it currently outputs), wrapped in a ```GstCaps``` structure. All possible caps a pad can support can be queried with ```gst_pad_query_caps()```. A pad can offer many capabilities, and hence ```GstCaps``` can contain many ```GstStructure```, each representing a different capability. The current caps on a pad will always have a single ```GstStructure``` and represent a single media format, or if there are no current caps yet ```NULL``` will be returned.
+`gst_pad_get_current_caps()` retrieves the current capabilities of the pad (that is, the kind of data it currently outputs), wrapped in a `GstCaps` structure. All possible caps a pad can support can be queried with `gst_pad_query_caps()`. A pad can offer many capabilities, and hence `GstCaps` can contain many `GstStructure`, each representing a different capability. The current caps on a pad will always have a single `GstStructure` and represent a single media format, or if there are no current caps yet `NULL` will be returned.
 
 Since, in this case, we know that the pad we want only had one capability (audio), we retrieve the first ```GstStructure``` with ```gst_caps_get_structure()```.
 
