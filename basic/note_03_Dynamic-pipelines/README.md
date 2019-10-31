@@ -68,7 +68,7 @@ We are now ready to go! Just set the pipeline to the ```PLAYING``` state and sta
 When our source element finally has enough information to start producing data, it will create source pads, and trigger the "pad-added" signal. At this point our callback will be called:
 
 ```
-`static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) {}`
+static void pad_added_handler (GstElement *src, GstPad *new_pad, CustomData *data) {}
 ```
 
 ```src``` is the ```GstElement``` which triggered the signal. In this example, it can only be the ```uridecodebin```, since it is the only signal to which we have attched. The first parameter of a signal handler is always the object that has triggered it.
@@ -78,30 +78,30 @@ When our source element finally has enough information to start producing data, 
 ```data`` is the pointer we provided when attaching to the signal. In this example, we use it to pass the ```CustomData``` pointer.
 
 ```
-`GstPad *sink_pad = gst_element_get_static_pad (data->convert, "sink");`
+GstPad *sink_pad = gst_element_get_static_pad (data->convert, "sink");
 ```
 
 From ```CustomData``` we extract the converter element, and then retrieve its sink pad using ```gst_element_get_static_pad()```. This is the pad to which we want to link ```new_pad```. In the previous tutorial we linked element against element, and let GStreamer choose the appropriate pads. Now we are going to link the pads directly.
 
 ```
-`/* If our converter is already linked, we have nothing to do here */
+/* If our converter is already linked, we have nothing to do here */
 if (gst_pad_is_linked (sink_pad)) {
   g_print ("We are already linked. Ignoring.\n");
   goto exit;
-}`
+}
 ```
 
 ```uridecodebin``` can create as many pads as it sees fit, and for each one, this callback will be called. These lines of code will prevent us from trying to link to a new pad once we are already linked.
 
 ```
-`/* Check the new pad's type */
+/* Check the new pad's type */
 new_pad_caps = gst_pad_get_current_caps (new_pad, NULL);
 new_pad_struct = gst_caps_get_structure (new_pad_caps, 0);
 new_pad_type = gst_structure_get_name (new_pad_struct);
 if (!g_str_has_prefix (new_pad_type, "audio/x-raw")) {
   g_print ("It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
   goto exit;
-}`
+}
 ```
 
 Now we will check the type of data this new pad is going to output, because we are only interested in pads producing audio. We have previously created a piece of pipeline which deals with audio (an ```audioconvert``` linked with an ```autoaudiosink```), and we will not be able to link it to a pad producing video, for example.
@@ -117,13 +117,13 @@ If the name is not ```audio/x-raw```, this is not a decoded audio pad, and we ar
 Otherwise, attempt the link:
 
 ```
-`/* Attempt the link */
+/* Attempt the link */
 ret = gst_pad_link (new_pad, sink_pad);
 if (GST_PAD_LINK_FAILED (ret)) {
   g_print ("Type is '%s' but link failed.\n", new_pad_type);
 } else {
   g_print ("Link succeeded (type '%s').\n", new_pad_type);
-}`
+}
 ```
 
 ```gst_pad_link()``` tries to link two pads. As it was the case with gst_element_link(), the link must be specified from source to sink, and both pads must be owned by elements residing in the same bin (or pipeline).
