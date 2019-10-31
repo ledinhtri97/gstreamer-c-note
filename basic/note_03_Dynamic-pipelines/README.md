@@ -126,17 +126,42 @@ if (GST_PAD_LINK_FAILED (ret)) {
 }
 ```
 
-```gst_pad_link()``` tries to link two pads. As it was the case with gst_element_link(), the link must be specified from source to sink, and both pads must be owned by elements residing in the same bin (or pipeline).
+`gst_pad_link()` tries to link two pads. As it was the case with `gst_element_link()`, the link must be specified from source to sink, and both pads must be owned by elements residing in the same bin (or pipeline).
 
-And we are done! When a pad of the right kind appears, it will be linked to the rest of the audio-processing pipeline and execution will continue until ```ERROR``` or ```EOS```. However, we will squeeze a bit more content from this tutorial by also introducing the concept of State.
+And we are done! When a pad of the right kind appears, it will be linked to the rest of the audio-processing pipeline and execution will continue until `ERROR` or `EOS`. However, we will squeeze a bit more content from this tutorial by also introducing the concept of State.
 
 > GStreamer States
 
-We already talked a bit about states when we said that playback does not start until you bring the pipeline to the ```PLAYING``` state. We will introduce here the rest of states and their meaning. There are 4 states in GStreamer:
+We already talked a bit about states when we said that playback does not start until you bring the pipeline to the `PLAYING` state. We will introduce here the rest of states and their meaning. There are 4 states in GStreamer:
 
-|  State   |      					Description      							|
-|----------|:------------------------------------------------------------------:|
+|  State   |      					Description      					      |
+|----------|------------------------------------------------------------------|
 | NULL	   | the NULL state or initial state of an element. |
 | READY    | the element is ready to go to PAUSED.   |
 | PAUSED   | the element is PAUSED, it is ready to accept and process data. Sink elements however only accept one buffer and then block. |
 | PLAYING  | the element is PLAYING, the clock is running and the data is flowing.|
+
+You can only move between adjacent ones, this is, you can't go from `NULL` to `PLAYING`, you have to go through the intermediate `READY` and `PAUSED` states. If you set the pipeline to `PLAYING`, though, GStreamer will make the intermediate transitions for you.
+
+```
+case GST_MESSAGE_STATE_CHANGED:
+  /* We are only interested in state-changed messages from the pipeline */
+  if (GST_MESSAGE_SRC (msg) == GST_OBJECT (data.pipeline)) {
+    GstState old_state, new_state, pending_state;
+    gst_message_parse_state_changed (msg, &old_state, &new_state, &pending_state);
+    g_print ("Pipeline state changed from %s to %s:\n",
+        gst_element_state_get_name (old_state), gst_element_state_get_name (new_state));
+  }
+  break;
+  ```
+
+We added this piece of code that listens to bus messages regarding state changes and prints them on screen to help you understand the transitions. Every element puts messages on the bus regarding its current state, so we filter them out and only listen to messages coming from the pipeline.
+
+Most applications only need to worry about going to `PLAYING` to start playback, then to `PAUSED` to perform a pause, and then back to `NULL` at program exit to free all resources.
+
+> Conclution
+
+
+> - How to be notified of events using GSignals
+> - How to connect GstPads directly instead of their parent elements.
+> - The various states of a GStreamer element.
