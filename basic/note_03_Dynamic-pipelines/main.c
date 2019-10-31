@@ -7,6 +7,7 @@ typedef struct _CustomData {
 	GstElement *source;
 	GstElement *convert;
 	GstElement *sink;
+	// GstElement *videosink;
 } CustomData;
 
 /*Handler for the pad-added signal*/
@@ -25,8 +26,10 @@ int main(int argc, char *argv[])
 
 	/*Create the elements*/
 	data.source = gst_element_factory_make("uridecodebin", "source");
-	data.convert = gst_element_factory_make("audioconvert", "convert");
-	data.sink = gst_element_factory_make("autoaudiosink", "sink");
+	// data.convert = gst_element_factory_make("audioconvert", "convert");
+	data.convert = gst_element_factory_make("videoconvert", "convert");
+	// data.sink = gst_element_factory_make("autoaudiosink", "sink");
+	data.sink = gst_element_factory_make("autovideosink", "sink");
 
 	/*Create the empty pipeline*/
 	data.pipeline = gst_pipeline_new("test-pipeline");
@@ -77,8 +80,8 @@ int main(int argc, char *argv[])
 			switch (GST_MESSAGE_TYPE(msg)) {
 				case GST_MESSAGE_ERROR:
 					gst_message_parse_error(msg, &err, &debug_info);
-					g_printerr("Error received from element %s: %s\n", GST_OBJECT_NAME(msg->src), err->message);
-					g_printerr("Debugging information: %s\n", debug_info ? debug_info : "none");
+					g_printerr("Error received from element '%s': '%s'\n", GST_OBJECT_NAME(msg->src), err->message);
+					g_printerr("Debugging information: '%s'\n", debug_info ? debug_info : "none");
 					g_clear_error (&err);
 					g_free (debug_info);
 					terminate = TRUE;
@@ -92,8 +95,9 @@ int main(int argc, char *argv[])
 					if(GST_MESSAGE_SRC(msg) == GST_OBJECT(data.pipeline)) {
 						GstState old_state, new_state, pending_state;
 						gst_message_parse_state_changed(msg, &old_state, &new_state, &pending_state);
-						g_print("Pipeline state changed from %s to %s:\n",
-								gst_element_state_get_name(old_state), gst_element_state_get_name(new_state)
+						g_print("Pipeline state changed from %s to %s and pending %s:\n",
+								gst_element_state_get_name(old_state), gst_element_state_get_name(new_state),
+								gst_element_state_get_name(pending_state)
 							);
 					}
 					break;
@@ -136,8 +140,8 @@ static void pad_added_handler(GstElement *src, GstPad *new_pad, CustomData *data
 	new_pad_struct = gst_caps_get_structure(new_pad_caps, 0);
 	new_pad_type = gst_structure_get_name(new_pad_struct);
 
-	if (!g_str_has_prefix(new_pad_type, "audio/x-raw")) {
-		g_print ("It has type '%s' which is not raw audio. Ignoring.\n", new_pad_type);
+	if (!g_str_has_prefix(new_pad_type, "video/x-raw")) {
+		g_print ("It has type '%s' which is not raw type. Ignoring.\n", new_pad_type);
 		goto exit;
 	}
 
